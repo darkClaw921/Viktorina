@@ -21,7 +21,7 @@ import setings
 import test 
 import viktorinaCreateSheet
 import viktorinaQuestions
-
+import json
 
 
 # VK setings
@@ -65,7 +65,7 @@ def keyboardCreater(ButtonText1, ButtonText2, ButtonText3, ButtonText4):
     keyboard.add_button(ButtonText3)
     keyboard.add_line()
     keyboard.add_button(ButtonText4)
-
+    
     keyboard = keyboard.get_keyboard()
 
     return keyboard
@@ -73,10 +73,20 @@ def keyboardCreater(ButtonText1, ButtonText2, ButtonText3, ButtonText4):
 def printQuestion(random_id, user_id):
     global columCell, questionsData, rowQuestion, nextQuestion
     
+    countRegisterUser = sheet.get("A24")
+    print(countRegisterUser)
+    countRegisterUser = countRegisterUser[0]
+    countRegisterUser = countRegisterUser[0]
+    print(countRegisterUser)
+    columCell = int(countRegisterUser)
+
+    sheet.update_cell(24, 1, int(countRegisterUser) + 1)
+
     columCell += 2
     privateColumCell = columCell
     privateRowCell = rowQuestion
 
+    
     firstConnection(user_id, privateColumCell)
     
 
@@ -100,7 +110,7 @@ def printQuestion(random_id, user_id):
         
         else:
             print(viktorinaQuestions.questions[question])
-            keyboard = keyboardCreater(*viktorinaQuestions.questions[question]) # * чтото вроде разбиения 
+            keyboard = keyboardCreater(*viktorinaQuestions.questions[question]) # * что-то вроде разбиения 
             
         vk.messages.send(
                     user_id=user_id,
@@ -170,7 +180,7 @@ def newUser(userId):
         # countRegisterUser = sheet.get("A30")
         # countRegisterUser = countRegisterUser[0]
         # countRegisterUser = countRegisterUser[0]
-        print(countRegisterUser)
+        # print(countRegisterUser)
 
 
         return False
@@ -201,37 +211,69 @@ def firstConnection(user_id, columCell):
     # sheet.update_cell(columCell, 1, f"""vk.com/id{user_id}""")
     
     sheet.update_cell(columCell, 1, user_id)
+    sheet.update_cell(columCell, 2, '1')
     sheet.update_cell(columCell, 3, userInfo["first_name"])
     sheet.update_cell(columCell, 4, userInfo["last_name"])
 
         
     print(f"Пользователь {user_id} подключился")
 
+def checkWhoUser(user_id):
+    """
+    Проверет есть ли user_id в таблице 
+    Если есть то возвращает cписок 
+    (True, 'номер строки') иначе (False, номер строки')
+    """
+    countRegisterUser = sheet.get("A24")
+    countRegisterUser = countRegisterUser[0][0]
+
+    # for user in countRegisterUser:
+    #     userID = sheet.get(f'A{user*2}')
+    #     userID = userID[0][0]
+    # print(countRegisterUser)
+    # countRegisterUser = countRegisterUser[0]
+    # countRegisterUser = countRegisterUser[0]
+    # print(countRegisterUser)
+    # columCell = int(countRegisterUser)
+
+    # sheet.update_cell(24, 1, int(countRegisterUser) + 1)
+    sheet.update_cell(24, 2, f'=MATCH({user_id}; A1:A{int(countRegisterUser)+1}; 0)')
+    empetyUser = sheet.get("B24")
+    empetyUser = empetyUser[0][0]
+    print(empetyUser)
+
+    if empetyUser == '#N/A':
+        print('Такого нет')
+        return False,empetyUser
+    else:
+        print('Такой есть ')
+        return True,empetyUser
+
 startMessage = '1'
+
+print(checkWhoUser(34))
 
 for event in longpoll.listen():
     print(event.type)
-
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
         vk.messages.getConversations(offset = 0, count = 1) 
 
         startMessage = event.text 
 
-        # print(startMessage == ('Казино ' or "казино " or 'Казино' or "казино"))
-        
-        if (startMessage == ('а' or 'А' or 'Казино ' or 'казино ')):
+        print(startMessage.lower)
+        if (startMessage.lower == 'а' or 'a '):
             print(start)
             start = True
         else:
             print(start)
             start = False
         
-
         if start:
 
-            whoUser = newUser(event.user_id)
-        
-            if whoUser:
+            # whoUser = newUser(event.user_id)
+            whoUser = checkWhoUser(event.user_id)
+
+            if not whoUser[0]:
                 print("Новый пользователь - добавлен в базу")
 
                 usersId.append(event.user_id)
