@@ -75,14 +75,13 @@ def printQuestion(random_id, user_id):
     
     countRegisterUser = sheet.get("A24")
     print(countRegisterUser)
-    countRegisterUser = countRegisterUser[0]
-    countRegisterUser = countRegisterUser[0]
+    countRegisterUser = countRegisterUser[0][0]
     print(countRegisterUser)
     columCell = int(countRegisterUser)
 
     sheet.update_cell(24, 1, int(countRegisterUser) + 1)
-
     columCell += 2
+    privateColumCell = checkWhoUser(user_id)
     privateColumCell = columCell
     privateRowCell = rowQuestion
 
@@ -224,19 +223,11 @@ def checkWhoUser(user_id):
     Если есть то возвращает cписок 
     (True, 'номер строки') иначе (False, номер строки')
     """
+    # или сделать ввывод в файл и проверку по нему чтобы небыло очереди на формулу в таблице
     countRegisterUser = sheet.get("A24")
     countRegisterUser = countRegisterUser[0][0]
 
-    # for user in countRegisterUser:
-    #     userID = sheet.get(f'A{user*2}')
-    #     userID = userID[0][0]
-    # print(countRegisterUser)
-    # countRegisterUser = countRegisterUser[0]
-    # countRegisterUser = countRegisterUser[0]
-    # print(countRegisterUser)
-    # columCell = int(countRegisterUser)
 
-    # sheet.update_cell(24, 1, int(countRegisterUser) + 1)
     sheet.update_cell(24, 2, f'=MATCH({user_id}; A1:A{int(countRegisterUser)+1}; 0)')
     empetyUser = sheet.get("B24")
     empetyUser = empetyUser[0][0]
